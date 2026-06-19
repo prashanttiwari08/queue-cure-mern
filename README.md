@@ -1,4 +1,4 @@
-# Queue Cure '26 - MERN Stack Real-Time Queue Management System
+# Queue Cure - MERN Stack Real-Time Queue Management System
 
 A production-ready real-time patient queue management system designed for modern clinics and hospitals. Receptionists can easily add patients and manage the queue, while patients can view live updates on a beautiful waiting room display.
 

@@ -88,7 +88,7 @@ export default function WaitingRoom() {
             <Stethoscope className="text-white w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gradient-light">Queue Cure '26</h1>
+            <h1 className="text-2xl font-bold text-gradient-light">Queue Cure</h1>
             <p className="text-sm text-slate-500 font-medium tracking-wide">Outpatient Department</p>
           </div>
         </div>

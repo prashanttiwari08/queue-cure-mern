@@ -1,4 +1,4 @@
-# Queue Cure '26 - Thought Process & Architecture Decisions
+# Queue Cure - Thought Process & Architecture Decisions
 
 As a Senior Full Stack Engineer, here is the detailed thought process and system architecture decisions made during the development of Queue Cure.
 
