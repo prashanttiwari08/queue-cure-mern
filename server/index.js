@@ -17,9 +17,16 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
+// Allow both production and local origins
+const allowedOrigins = [
+  'https://queue-cure-mern-git-main-prshntiwri.vercel.app',
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
@@ -33,7 +40,7 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: allowedOrigins,
 }));
 app.use(express.json());
 
