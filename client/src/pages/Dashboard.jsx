@@ -109,9 +109,10 @@ export default function Dashboard() {
   /* ── Loading Skeleton ──────────────────── */
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-primary-500 to-secondary flex items-center justify-center animate-bounce-gentle shadow-neon-blue">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#14B8A6] flex items-center justify-center"
+               style={{ animation: 'bounceGentle 2s ease-in-out infinite', boxShadow: '0 0 20px rgba(37,99,235,0.3)' }}>
             <Stethoscope className="w-7 h-7 text-white" />
           </div>
           <p className="text-slate-400 font-medium tracking-wide animate-pulse">Loading Dashboard…</p>
@@ -130,7 +131,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#F8FAFC]">
       {/* Subtle background mesh */}
       <div className="fixed inset-0 pointer-events-none opacity-60 mesh-bg" />
 
@@ -143,7 +144,8 @@ export default function Dashboard() {
         {/* ── Header ──────────────────────────── */}
         <motion.header variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#14B8A6] rounded-2xl flex items-center justify-center shadow-lg"
+                 style={{ boxShadow: '0 8px 24px rgba(37,99,235,0.25)' }}>
               <Stethoscope className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -157,9 +159,8 @@ export default function Dashboard() {
             to="/waiting-room"
             target="_blank"
             id="open-waiting-room"
-            className="glass-card !rounded-xl px-5 py-2.5 text-primary-500 font-semibold 
-                       hover:shadow-neon-blue inline-flex items-center gap-2 text-sm
-                       transition-all duration-300 hover:-translate-y-0.5"
+            className="glass-card px-5 py-2.5 text-[#2563EB] font-semibold inline-flex items-center gap-2 text-sm transition-all duration-300 hover:-translate-y-0.5"
+            style={{ borderRadius: '0.75rem' }}
           >
             <ExternalLink className="w-4 h-4" /> Open Waiting Room
           </Link>
@@ -199,7 +200,7 @@ export default function Dashboard() {
             {/* Add Patient Form */}
             <div className="form-card">
               <h2 className="form-title">
-                <div className="p-2 bg-primary-50 text-primary-500 rounded-lg">
+                <div className="p-2 bg-blue-50 text-[#2563EB] rounded-lg">
                   <UserPlus className="w-5 h-5" />
                 </div>
                 Add New Patient
@@ -278,9 +279,9 @@ export default function Dashboard() {
           <motion.div variants={itemVariants} className="lg:col-span-2 glass-card p-6 flex flex-col min-h-[520px]">
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <Activity className="w-5 h-5 text-primary-500" />
+                <Activity className="w-5 h-5 text-[#2563EB]" />
                 Today's Queue
-                <span className="ml-2 text-xs font-semibold bg-primary-50 text-primary-600 px-2 py-0.5 rounded-full">
+                <span className="ml-2 text-xs font-semibold bg-blue-50 text-[#2563EB] px-2 py-0.5 rounded-full">
                   {patients.length} patients
                 </span>
               </h2>
@@ -336,7 +337,7 @@ export default function Dashboard() {
                             <div className="text-sm text-slate-400 mt-0.5">
                               {patient.mobile} {patient.age && `· ${patient.age} yrs`}
                             </div>
-                            <div className="text-xs text-slate-300 mt-1 font-mono">
+                            <div className="text-xs text-slate-300 mt-1" style={{ fontFamily: 'var(--font-mono)' }}>
                               {new Date(patient.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </td>
