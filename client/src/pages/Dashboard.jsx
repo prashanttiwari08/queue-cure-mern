@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { patientApi, settingsApi } from '../services/api';
 import { socket } from '../sockets/socket';
 import toast from 'react-hot-toast';
-import { Users, UserPlus, Clock, ListChecks, Settings2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users, UserPlus, Clock, ListChecks, Settings2, Activity, ExternalLink, RotateCcw, Stethoscope } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -68,7 +69,6 @@ export default function Dashboard() {
     try {
       await patientApi.addPatient(formData);
       setFormData({ name: '', mobile: '', age: '' });
-      // Event handles the UI update
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to add patient');
     }
@@ -106,167 +106,277 @@ export default function Dashboard() {
   const currentPatient = patients.find(p => p.status === 'In Consultation');
   const completedPatients = patients.filter(p => p.status === 'Completed');
 
+  /* ── Loading Skeleton ──────────────────── */
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-primary-500 to-secondary flex items-center justify-center animate-bounce-gentle shadow-neon-blue">
+            <Stethoscope className="w-7 h-7 text-white" />
+          </div>
+          <p className="text-slate-400 font-medium tracking-wide animate-pulse">Loading Dashboard…</p>
+        </div>
+      </div>
+    );
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  };
+  const itemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Reception Dashboard</h1>
-            <p className="text-slate-500 mt-1">Manage today's queue and patient flow</p>
+    <div className="min-h-screen bg-background">
+      {/* Subtle background mesh */}
+      <div className="fixed inset-0 pointer-events-none opacity-60 mesh-bg" />
+
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 max-w-7xl mx-auto p-5 md:p-8 space-y-7"
+      >
+        {/* ── Header ──────────────────────────── */}
+        <motion.header variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20">
+              <Stethoscope className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+                Reception Dashboard
+              </h1>
+              <p className="text-slate-400 text-sm mt-0.5 font-medium">Manage today's queue and patient flow</p>
+            </div>
           </div>
-          <Link to="/waiting-room" target="_blank" className="bg-white border shadow-sm px-4 py-2 rounded-lg text-primary font-medium hover:bg-slate-50 transition-colors inline-flex items-center gap-2">
-            <Users className="w-5 h-5" /> Open Waiting Room
+          <Link
+            to="/waiting-room"
+            target="_blank"
+            id="open-waiting-room"
+            className="glass-card !rounded-xl px-5 py-2.5 text-primary-500 font-semibold 
+                       hover:shadow-neon-blue inline-flex items-center gap-2 text-sm
+                       transition-all duration-300 hover:-translate-y-0.5"
+          >
+            <ExternalLink className="w-4 h-4" /> Open Waiting Room
           </Link>
-        </header>
+        </motion.header>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Users className="w-6 h-6" /></div>
-            <div>
-              <p className="text-sm font-medium text-slate-500">Total Today</p>
-              <p className="text-2xl font-bold text-slate-900">{patients.length}</p>
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="p-3 bg-teal-50 text-teal-600 rounded-xl"><UserPlus className="w-6 h-6" /></div>
-            <div>
-              <p className="text-sm font-medium text-slate-500">Currently Waiting</p>
-              <p className="text-2xl font-bold text-slate-900">{waitingPatients.length}</p>
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl"><ListChecks className="w-6 h-6" /></div>
-            <div>
-              <p className="text-sm font-medium text-slate-500">Current Token</p>
-              <p className="text-2xl font-bold text-slate-900">{currentPatient ? currentPatient.tokenNumber : '-'}</p>
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><Clock className="w-6 h-6" /></div>
-            <div>
-              <p className="text-sm font-medium text-slate-500">Avg Consult Time</p>
-              <p className="text-2xl font-bold text-slate-900">{settings.averageConsultationTime}m</p>
-            </div>
-          </div>
-        </div>
+        {/* ── Stats Grid ──────────────────────── */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { icon: Users,      label: 'Total Today',       value: patients.length,                    color: 'bg-blue-50 text-blue-600' },
+            { icon: UserPlus,   label: 'Currently Waiting',  value: waitingPatients.length,             color: 'bg-teal-50 text-teal-600' },
+            { icon: ListChecks, label: 'Current Token',      value: currentPatient ? `#${currentPatient.tokenNumber}` : '—', color: 'bg-amber-50 text-amber-600' },
+            { icon: Clock,      label: 'Avg Consult Time',   value: `${settings.averageConsultationTime}m`, color: 'bg-purple-50 text-purple-600' },
+          ].map(({ icon: Icon, label, value, color }, i) => (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.07 }}
+              className="stat-card"
+            >
+              <div className={`stat-icon ${color}`}>
+                <Icon className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="stat-label">{label}</p>
+                <p className="stat-value">{value}</p>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
 
+        {/* ── Main Content Grid ───────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Forms */}
-          <div className="space-y-6 lg:col-span-1">
+
+          {/* ── Left Column: Forms ────────────── */}
+          <motion.div variants={itemVariants} className="space-y-6 lg:col-span-1">
             {/* Add Patient Form */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-primary" /> Add New Patient
+            <div className="form-card">
+              <h2 className="form-title">
+                <div className="p-2 bg-primary-50 text-primary-500 rounded-lg">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                Add New Patient
               </h2>
-              <form onSubmit={handleAddPatient} className="space-y-4">
+              <form onSubmit={handleAddPatient} className="space-y-4" id="add-patient-form">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Patient Name</label>
-                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="John Doe" />
+                  <label className="input-label">Patient Name</label>
+                  <input
+                    id="patient-name"
+                    required
+                    type="text"
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    className="input-field"
+                    placeholder="e.g. Rahul Sharma"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
-                  <input required type="tel" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="+1 234 567 8900" />
+                  <label className="input-label">Mobile Number</label>
+                  <input
+                    id="patient-mobile"
+                    required
+                    type="tel"
+                    value={formData.mobile}
+                    onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                    className="input-field"
+                    placeholder="+91 98765 43210"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Age (Optional)</label>
-                  <input type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="30" />
+                  <label className="input-label">Age <span className="text-slate-400">(Optional)</span></label>
+                  <input
+                    id="patient-age"
+                    type="number"
+                    value={formData.age}
+                    onChange={e => setFormData({ ...formData, age: e.target.value })}
+                    className="input-field"
+                    placeholder="30"
+                  />
                 </div>
-                <button type="submit" className="w-full bg-primary hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm">
+                <button id="generate-token-btn" type="submit" className="btn-primary">
                   Generate Token
                 </button>
               </form>
             </div>
 
             {/* Settings Form */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <Settings2 className="w-5 h-5 text-slate-600" /> Consultation Settings
-              </h2>
-              <form onSubmit={handleUpdateSettings} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Avg Time (minutes)</label>
-                  <input required type="number" min="1" value={settings.averageConsultationTime} onChange={e => setSettings({...settings, averageConsultationTime: e.target.value})} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+            <div className="form-card">
+              <h2 className="form-title">
+                <div className="p-2 bg-slate-100 text-slate-600 rounded-lg">
+                  <Settings2 className="w-5 h-5" />
                 </div>
-                <button type="submit" className="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm">
+                Consultation Settings
+              </h2>
+              <form onSubmit={handleUpdateSettings} className="space-y-4" id="settings-form">
+                <div>
+                  <label className="input-label">Avg Consultation Time (minutes)</label>
+                  <input
+                    id="avg-time-input"
+                    required
+                    type="number"
+                    min="1"
+                    value={settings.averageConsultationTime}
+                    onChange={e => setSettings({ ...settings, averageConsultationTime: e.target.value })}
+                    className="input-field"
+                  />
+                </div>
+                <button id="save-settings-btn" type="submit" className="btn-secondary">
                   Save Settings
                 </button>
               </form>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right Column: Queue Table */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col h-full min-h-[500px]">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold text-slate-900">Today's Queue</h2>
-              <button onClick={handleResetQueue} className="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-md transition-colors">
-                Reset Queue
+          {/* ── Right Column: Queue Table ─────── */}
+          <motion.div variants={itemVariants} className="lg:col-span-2 glass-card p-6 flex flex-col min-h-[520px]">
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <Activity className="w-5 h-5 text-primary-500" />
+                Today's Queue
+                <span className="ml-2 text-xs font-semibold bg-primary-50 text-primary-600 px-2 py-0.5 rounded-full">
+                  {patients.length} patients
+                </span>
+              </h2>
+              <button
+                id="reset-queue-btn"
+                onClick={handleResetQueue}
+                className="text-sm font-semibold text-red-500 hover:text-red-600 
+                           hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all duration-200
+                           inline-flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Reset Queue
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto rounded-xl border border-slate-100">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 sticky top-0 z-10">
+            <div className="flex-1 overflow-auto rounded-xl border border-slate-100 custom-scrollbar">
+              <table className="queue-table">
+                <thead>
                   <tr>
-                    <th className="px-6 py-4 text-sm font-semibold text-slate-600">Token</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-slate-600">Patient Info</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-slate-600">Status</th>
-                    <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-right">Actions</th>
+                    <th>Token</th>
+                    <th>Patient Info</th>
+                    <th>Status</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {patients.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="px-6 py-12 text-center text-slate-500">
-                        No patients in the queue today.
-                      </td>
-                    </tr>
-                  ) : (
-                    patients.map((patient) => (
-                      <tr key={patient._id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-700 font-bold text-lg">
-                            {patient.tokenNumber}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="font-medium text-slate-900">{patient.name}</div>
-                          <div className="text-sm text-slate-500">{patient.mobile} {patient.age && `• ${patient.age} yrs`}</div>
-                          <div className="text-xs text-slate-400 mt-1">{new Date(patient.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border
-                            ${patient.status === 'Waiting' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
-                              patient.status === 'In Consultation' ? 'bg-teal-50 text-teal-700 border-teal-200' : 
-                              'bg-slate-100 text-slate-700 border-slate-200'}`}>
-                            {patient.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-2">
-                          {patient.status === 'Waiting' && (
-                            <button onClick={() => handleStatusChange(patient._id, 'In Consultation')} className="inline-flex items-center justify-center px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                              Call Next
-                            </button>
-                          )}
-                          {patient.status === 'In Consultation' && (
-                            <button onClick={() => handleStatusChange(patient._id, 'Completed')} className="inline-flex items-center justify-center px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                              Mark Done
-                            </button>
-                          )}
+                <tbody>
+                  <AnimatePresence>
+                    {patients.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-16 text-center">
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center">
+                              <Users className="w-8 h-8 text-slate-300" />
+                            </div>
+                            <p className="text-slate-400 font-medium">No patients in the queue today.</p>
+                            <p className="text-slate-300 text-sm">Add a patient using the form on the left.</p>
+                          </div>
                         </td>
                       </tr>
-                    ))
-                  )}
+                    ) : (
+                      patients.map((patient, index) => (
+                        <motion.tr
+                          key={patient._id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                          transition={{ delay: index * 0.03 }}
+                        >
+                          <td>
+                            <span className="token-circle">{patient.tokenNumber}</span>
+                          </td>
+                          <td>
+                            <div className="font-semibold text-slate-800">{patient.name}</div>
+                            <div className="text-sm text-slate-400 mt-0.5">
+                              {patient.mobile} {patient.age && `· ${patient.age} yrs`}
+                            </div>
+                            <div className="text-xs text-slate-300 mt-1 font-mono">
+                              {new Date(patient.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </td>
+                          <td>
+                            <span className={
+                              patient.status === 'Waiting' ? 'badge-waiting' :
+                              patient.status === 'In Consultation' ? 'badge-active' :
+                              'badge-completed'
+                            }>
+                              {patient.status}
+                            </span>
+                          </td>
+                          <td className="text-right space-x-2">
+                            {patient.status === 'Waiting' && (
+                              <button
+                                onClick={() => handleStatusChange(patient._id, 'In Consultation')}
+                                className="btn-call"
+                              >
+                                Call Next
+                              </button>
+                            )}
+                            {patient.status === 'In Consultation' && (
+                              <button
+                                onClick={() => handleStatusChange(patient._id, 'Completed')}
+                                className="btn-done"
+                              >
+                                Mark Done
+                              </button>
+                            )}
+                          </td>
+                        </motion.tr>
+                      ))
+                    )}
+                  </AnimatePresence>
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
