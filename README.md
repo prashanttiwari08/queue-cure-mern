@@ -47,19 +47,7 @@ graph TD
 - Node.js installed on your machine
 - MongoDB Atlas account (or Local MongoDB)
 
-### Environment Variables
 
-**Backend (`server/.env`)**
-```env
-PORT=5000
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/queue-cure
-FRONTEND_URL=http://localhost:5173
-```
-
-**Frontend (`client/.env`)**
-```env
-VITE_BACKEND_URL=http://localhost:5000
-```
 
 ### Installation
 
